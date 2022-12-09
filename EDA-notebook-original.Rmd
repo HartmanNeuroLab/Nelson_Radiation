@@ -1,0 +1,1623 @@
+---
+title: "R Notebook EDA workflow"
+output: html_notebook
+---
+
+install required packages (only need to do this once?)
+
+```{r}
+install.packages("ggplot2"); # for graphics functions
+install.packages("car"); # for the leveneTest() function
+install.packages("pastecs"); # for the stat.desc() function
+install.packages("psych"); # for the describe() function
+```
+
+"call" the required packages (need to do this every session?)
+
+```{r}
+library(car); library(ggplot2); library(pastecs); library(psych)
+```
+
+Use Excel to generate a .csv file with "tidy" data (each row = 1 case / subject, 1st row is column names). Import .CSV file into R "dataframe" called "watermazedata". The show the "watermazedata" dataframe (header + 1st 8 data rows) to check it out
+
+```{r}
+watermazedata <- read.csv(file="water maze all.csv", header=TRUE, sep=",")
+watermazedata
+```
+
+Derive new variables. Mostly use the rowMeans() function, but these may be useful as well...
+
+Make some new DVs (~"columns") assigned 1 (TRUE) or 0 (FALSE) based on Boolean calculations:
+- Less than? watermazedata$Duration.Spatial2LessThanSpatial1 <- watermazedata$Duration.Spatial2 < watermazedata$Duration.Spatial2
+- Less than or equal to? watermazedata$Duration.Spatial1LessThanOrEqualTo60 <- watermazedata$Duration.Spatial2 <= 60
+- Equal to? watermazedata$Sh <- watermazedata$Treatment == "Sh"
+- Not equal to? watermazedata$NotSh <- watermazedata$Treatment != "Sh"
+
+Use "ifelse" to maybe replace scores (e.g., replace any duration greater than 60 with NA "missing data", else keep the same)
+- watermazedata$Duration.Spatial.Clean <- ifelse(watermazedata$Duration.Spatial > 60, NA, watermazedata$Duration.Spatial)
+
+```{r}
+# Trials 1-10 for cued, spatial 1, spatial 2 and spatial trials averaged into 5 blocks (2 trials each) each for both Distance and Duration
+watermazedata$Duration.Cued.Block1 <- rowMeans(cbind
+                                               (watermazedata$Duration.Cued.1,
+                                                 watermazedata$Duration.Cued.2),
+                                               na.rm = TRUE)
+watermazedata$Duration.Cued.Block2 <- rowMeans(cbind
+                                               (watermazedata$Duration.Cued.3,
+                                                 watermazedata$Duration.Cued.4),
+                                               na.rm = TRUE)
+watermazedata$Duration.Cued.Block3 <- rowMeans(cbind
+                                               (watermazedata$Duration.Cued.5,
+                                                 watermazedata$Duration.Cued.6),
+                                               na.rm = TRUE)
+watermazedata$Duration.Cued.Block4 <- rowMeans(cbind
+                                               (watermazedata$Duration.Cued.7,
+                                                 watermazedata$Duration.Cued.8),
+                                               na.rm = TRUE)
+watermazedata$Duration.Cued.Block5 <- rowMeans(cbind
+                                               (watermazedata$Duration.Cued.9,
+                                                 watermazedata$Duration.Cued.10),
+                                               na.rm = TRUE)
+
+watermazedata$Duration.Spatial1.Block1 <- rowMeans(cbind
+                                               (watermazedata$Duration.Spatial1.1,
+                                                 watermazedata$Duration.Spatial1.2),
+                                               na.rm = TRUE)
+watermazedata$Duration.Spatial1.Block2 <- rowMeans(cbind
+                                               (watermazedata$Duration.Spatial1.3,
+                                                 watermazedata$Duration.Spatial1.4),
+                                               na.rm = TRUE)
+watermazedata$Duration.Spatial1.Block3 <- rowMeans(cbind
+                                               (watermazedata$Duration.Spatial1.5,
+                                                 watermazedata$Duration.Spatial1.6),
+                                               na.rm = TRUE)
+watermazedata$Duration.Spatial1.Block4 <- rowMeans(cbind
+                                               (watermazedata$Duration.Spatial1.7,
+                                                 watermazedata$Duration.Spatial1.8),
+                                               na.rm = TRUE)
+watermazedata$Duration.Spatial1.Block5 <- rowMeans(cbind
+                                               (watermazedata$Duration.Spatial1.9,
+                                                 watermazedata$Duration.Spatial1.10),
+                                               na.rm = TRUE)
+
+watermazedata$Duration.Spatial2.Block1 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial2.1,
+                                                     watermazedata$Duration.Spatial2.2),
+                                                   na.rm = TRUE)
+watermazedata$Duration.Spatial2.Block2 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial2.3,
+                                                     watermazedata$Duration.Spatial2.4),
+                                                   na.rm = TRUE)
+watermazedata$Duration.Spatial2.Block3 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial2.5,
+                                                     watermazedata$Duration.Spatial2.6),
+                                                   na.rm = TRUE)
+watermazedata$Duration.Spatial2.Block4 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial2.7,
+                                                     watermazedata$Duration.Spatial2.8),
+                                                   na.rm = TRUE)
+watermazedata$Duration.Spatial2.Block5 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial2.9,
+                                                     watermazedata$Duration.Spatial2.10),
+                                                   na.rm = TRUE)
+
+watermazedata$Duration.Spatial3.Block1 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial3.1,
+                                                     watermazedata$Duration.Spatial3.2),
+                                                   na.rm = TRUE)
+watermazedata$Duration.Spatial3.Block2 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial3.3,
+                                                     watermazedata$Duration.Spatial3.4),
+                                                   na.rm = TRUE)
+watermazedata$Duration.Spatial3.Block3 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial3.5,
+                                                     watermazedata$Duration.Spatial3.6),
+                                                   na.rm = TRUE)
+watermazedata$Duration.Spatial3.Block4 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial3.7,
+                                                     watermazedata$Duration.Spatial3.8),
+                                                   na.rm = TRUE)
+watermazedata$Duration.Spatial3.Block5 <- rowMeans(cbind
+                                                   (watermazedata$Duration.Spatial3.9,
+                                                     watermazedata$Duration.Spatial3.10),
+                                                   na.rm = TRUE)
+
+watermazedata$Distance.Cued.Block1 <- rowMeans(cbind
+                                               (watermazedata$Distance.Cued.1,
+                                                 watermazedata$Distance.Cued.2),
+                                               na.rm = TRUE)
+watermazedata$Distance.Cued.Block2 <- rowMeans(cbind
+                                               (watermazedata$Distance.Cued.3,
+                                                 watermazedata$Distance.Cued.4),
+                                               na.rm = TRUE)
+watermazedata$Distance.Cued.Block3 <- rowMeans(cbind
+                                               (watermazedata$Distance.Cued.5,
+                                                 watermazedata$Distance.Cued.6),
+                                               na.rm = TRUE)
+watermazedata$Distance.Cued.Block4 <- rowMeans(cbind
+                                               (watermazedata$Distance.Cued.7,
+                                                 watermazedata$Distance.Cued.8),
+                                               na.rm = TRUE)
+watermazedata$Distance.Cued.Block5 <- rowMeans(cbind
+                                               (watermazedata$Distance.Cued.9,
+                                                 watermazedata$Distance.Cued.10),
+                                               na.rm = TRUE)
+
+watermazedata$Distance.Spatial1.Block1 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial1.1,
+                                                     watermazedata$Distance.Spatial1.2),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial1.Block2 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial1.3,
+                                                     watermazedata$Distance.Spatial1.4),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial1.Block3 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial1.5,
+                                                     watermazedata$Distance.Spatial1.6),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial1.Block4 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial1.7,
+                                                     watermazedata$Distance.Spatial1.8),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial1.Block5 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial1.9,
+                                                     watermazedata$Distance.Spatial1.10),
+                                                   na.rm = TRUE)
+
+watermazedata$Distance.Spatial2.Block1 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial2.1,
+                                                     watermazedata$Distance.Spatial2.2),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial2.Block2 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial2.3,
+                                                     watermazedata$Distance.Spatial2.4),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial2.Block3 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial2.5,
+                                                     watermazedata$Distance.Spatial2.6),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial2.Block4 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial2.7,
+                                                     watermazedata$Distance.Spatial2.8),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial2.Block5 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial2.9,
+                                                     watermazedata$Distance.Spatial2.10),
+                                                   na.rm = TRUE)
+
+watermazedata$Distance.Spatial3.Block1 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial3.1,
+                                                     watermazedata$Distance.Spatial3.2),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial3.Block2 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial3.3,
+                                                     watermazedata$Distance.Spatial3.4),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial3.Block3 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial3.5,
+                                                     watermazedata$Distance.Spatial3.6),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial3.Block4 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial3.7,
+                                                     watermazedata$Distance.Spatial3.8),
+                                                   na.rm = TRUE)
+watermazedata$Distance.Spatial3.Block5 <- rowMeans(cbind
+                                                   (watermazedata$Distance.Spatial3.9,
+                                                     watermazedata$Distance.Spatial3.10),
+                                                   na.rm = TRUE)
+
+# Cued, spatial 1, spatial 2 and spatial blocks 1-5 averaged into Overall Averages for both Distance and Duration
+watermazedata$Duration.Cued <- rowMeans(cbind (watermazedata$Duration.Cued.1,
+                                               watermazedata$Duration.Cued.2,
+                                               watermazedata$Duration.Cued.3,
+                                               watermazedata$Duration.Cued.4,
+                                               watermazedata$Duration.Cued.5),
+                                               na.rm = TRUE)
+watermazedata$Duration.Spatial1 <- rowMeans(cbind (watermazedata$Duration.Spatial1.1,
+                                               watermazedata$Duration.Spatial1.2,
+                                               watermazedata$Duration.Spatial1.3,
+                                               watermazedata$Duration.Spatial1.4,
+                                               watermazedata$Duration.Spatial1.5),
+                                        na.rm = TRUE)
+watermazedata$Duration.Spatial2 <- rowMeans(cbind (watermazedata$Duration.Spatial2.1,
+                                                   watermazedata$Duration.Spatial2.2,
+                                                   watermazedata$Duration.Spatial2.3,
+                                                   watermazedata$Duration.Spatial2.4,
+                                                   watermazedata$Duration.Spatial2.5),
+                                            na.rm = TRUE)
+watermazedata$Duration.Spatial3 <- rowMeans(cbind (watermazedata$Duration.Spatial3.1,
+                                                   watermazedata$Duration.Spatial3.2,
+                                                   watermazedata$Duration.Spatial3.3,
+                                                   watermazedata$Duration.Spatial3.4,
+                                                   watermazedata$Duration.Spatial3.5),
+                                            na.rm = TRUE)
+watermazedata$Duration.Spatial <- rowMeans(cbind (watermazedata$Duration.Spatial1,
+                                                   watermazedata$Duration.Spatial2,
+                                                   watermazedata$Duration.Spatial3),
+                                            na.rm = TRUE)
+
+
+watermazedata$Distance.Cued <- rowMeans(cbind (watermazedata$Distance.Cued.1,
+                                               watermazedata$Distance.Cued.2,
+                                               watermazedata$Distance.Cued.3,
+                                               watermazedata$Distance.Cued.4,
+                                               watermazedata$Distance.Cued.5),
+                                        na.rm = TRUE)
+watermazedata$Distance.Spatial1 <- rowMeans(cbind (watermazedata$Distance.Spatial1.1,
+                                                   watermazedata$Distance.Spatial1.2,
+                                                   watermazedata$Distance.Spatial1.3,
+                                                   watermazedata$Distance.Spatial1.4,
+                                                   watermazedata$Distance.Spatial1.5),
+                                            na.rm = TRUE)
+watermazedata$Distance.Spatial2 <- rowMeans(cbind (watermazedata$Distance.Spatial2.1,
+                                                   watermazedata$Distance.Spatial2.2,
+                                                   watermazedata$Distance.Spatial2.3,
+                                                   watermazedata$Distance.Spatial2.4,
+                                                   watermazedata$Distance.Spatial2.5),
+                                            na.rm = TRUE)
+watermazedata$Distance.Spatial3 <- rowMeans(cbind (watermazedata$Distance.Spatial3.1,
+                                                   watermazedata$Distance.Spatial3.2,
+                                                   watermazedata$Distance.Spatial3.3,
+                                                   watermazedata$Distance.Spatial3.4,
+                                                   watermazedata$Distance.Spatial3.5),
+                                            na.rm = TRUE)
+watermazedata$Distance.Spatial <- rowMeans(cbind (watermazedata$Distance.Spatial1,
+                                                  watermazedata$Distance.Spatial2,
+                                                  watermazedata$Distance.Spatial3),
+                                           na.rm = TRUE)
+
+# Make a Speed variable (Distance/Duration)
+watermazedata$Speed <- watermazedata$Distance.Spatial / watermazedata$Duration.Spatial
+
+```
+
+Create a "subset" dataframe for each group to ease making histograms/normal curves and QQ plots by group.
+
+```{r}
+Ac_watermazedata<-subset(watermazedata, watermazedata$Treatment=="Ac")
+Fx_watermazedata<-subset(watermazedata, watermazedata$Treatment=="Fx")
+Sh_watermazedata<-subset(watermazedata, watermazedata$Treatment=="Sh")
+```
+
+How many subjects are missing data from a specific column? (na = 'missing'). Make a variable that returns 1 (TRUE) if data is missing:
+watermazedata$Duration.Spatial1.Missing <- is.na(watermazedata$Duration.Spatial1)
+
+How many subjects are missing from Duration.Spatial1 data?
+sum(watermazedata$Duration.Spatial1.Missing)
+
+1 = missing, 0 = there, so mean will tell us proportion of cases missing data in that variable
+
+....or simply calculate this WITHOUT making a new variable:
+
+```{r}
+sum(is.na(watermazedata$Duration.Cued)); mean(is.na(watermazedata$Duration.Cued))
+sum(is.na(watermazedata$Duration.Spatial1)); mean(is.na(watermazedata$Duration.Spatial1))
+sum(is.na(watermazedata$Duration.Spatial2)); mean(is.na(watermazedata$Duration.Spatial2))
+sum(is.na(watermazedata$Duration.Spatial3)); mean(is.na(watermazedata$Duration.Spatial3))
+sum(is.na(watermazedata$Duration.Spatial)); mean(is.na(watermazedata$Duration.Spatial))
+sum(is.na(watermazedata$Distance.Cued)); mean(is.na(watermazedata$Distance.Cued))
+sum(is.na(watermazedata$Distance.Spatial1)); mean(is.na(watermazedata$Distance.Spatial1))
+sum(is.na(watermazedata$Distance.Spatial2)); mean(is.na(watermazedata$Distance.Spatial2))
+sum(is.na(watermazedata$Distance.Spatial3)); mean(is.na(watermazedata$Distance.Spatial3))
+sum(is.na(watermazedata$Distance.Spatial)); mean(is.na(watermazedata$Distance.Spatial))
+sum(is.na(watermazedata$Speed)); mean(is.na(watermazedata$Speed))
+sum(is.na(watermazedata$Probe.Entries.1)); mean(is.na(watermazedata$Probe.Entries.1))
+sum(is.na(watermazedata$Probe.Entries.2)); mean(is.na(watermazedata$Probe.Entries.2))
+sum(is.na(watermazedata$Probe.Entries.3)); mean(is.na(watermazedata$Probe.Entries.3))
+sum(is.na(watermazedata$Probe.Entries.Ave)); mean(is.na(watermazedata$Probe.Entries.Ave))
+sum(is.na(watermazedata$Probe.Percent1)); mean(is.na(watermazedata$Probe.Percent1))
+sum(is.na(watermazedata$Probe.Percent2)); mean(is.na(watermazedata$Probe.Percent2))
+sum(is.na(watermazedata$Probe.Percent3)); mean(is.na(watermazedata$Probe.Percent3))
+sum(is.na(watermazedata$Probe.Percent.Ave)); mean(is.na(watermazedata$Probe.Percent.Ave))
+sum(is.na(watermazedata$Probe2.Opposite.Percent)); mean(is.na(watermazedata$Probe2.Opposite.Percent))
+```
+
+Now, start checking the various aussumptions (normality, homogeneity of variance, etc.) for all *meaningful DVS* - e.g., Average Distance and Distance for days 1-3 are probably important, but Blocks 1-5 from each are *probably* not (?). If the idea is to compare groups, the assumptions need to be tested with each variable broken down by group.
+
+??? is there a "Bonferroni correction" for multiple tests of Normality etc ???
+
+Generate some descriptive stats for the variables of interest.
+
+NOTE: For output reported using "e": e+02, simply "move" the decimal point 2 places to right. e-02 = move decimal 2 places to left...
+
+Can use describe() (from the psych package) or stat.desc() function (from the pastecs package) to get some basic stats.
+
+```{r}
+
+# describe()
+# Overall DVs (not broken down by group)
+# single variables: by(data = dataFrame$Variable, INDICES = dataFrame$grouping DV, FUN = function)
+# by(data = watermazedata$Duration.Spatial, INDICES = watermazedata$Treatment, FUN = describe)
+# or
+# by(watermazedata$Duration.Spatial, watermazedata$Treatment, describe)
+
+# multiple variables at once:
+# describe(cbind(watermazedata$Duration.Cued,
+#                watermazedata$Duration.Spatial1,
+#                watermazedata$Duration.Spatial2,
+#                watermazedata$Duration.Spatial3,
+#                watermazedata$Duration.Spatial,
+#                watermazedata$Distance.Cued,
+#                watermazedata$Distance.Spatial1,
+#                watermazedata$Distance.Spatial2,
+#                watermazedata$Distance.Spatial3,
+#                watermazedata$Distance.Spatial,
+#                watermazedata$Speed,
+#                watermazedata$Probe.Entries.1,
+#                watermazedata$Probe.Entries.2,
+#                watermazedata$Probe.Entries.3,
+#                watermazedata$Probe.Entries.Ave,
+#                watermazedata$Probe.Percent1,
+#                watermazedata$Probe.Percent2,
+#                watermazedata$Probe.Percent3,
+#                watermazedata$Probe.Percent.Ave,
+#                watermazedata$Probe2.Opposite.Percent))
+# or
+# describe(watermazedata[,c("Duration.Spatial1",
+#                          "Duration.Spatial2",
+#                          "Duration.Spatial3")]); # ETC
+
+
+# broken down by group
+#by(cbind(Duration.Cued=watermazedata$Duration.Cued,
+#         Duration.Spatial1=watermazedata$Duration.Spatial1,
+#         Duration.Spatial2=watermazedata$Duration.Spatial2,
+#         Duration.Spatial3=watermazedata$Duration.Spatial3,
+#         Duration.Spatial=watermazedata$Duration.Spatial,
+#         Distance.Cued=watermazedata$Distance.Cued,
+#         Distance.Spatial1=watermazedata$Distance.Spatial1,
+#         Distance.Spatial2=watermazedata$Distance.Spatial2,
+#         Distance.Spatial3=watermazedata$Distance.Spatial3,
+#         Distance.Spatial=watermazedata$Distance.Spatial,
+#         Speed=watermazedata$Speed,
+#         Probe.Entries.1=watermazedata$Probe.Entries.1,
+#         Probe.Entries.2=watermazedata$Probe.Entries.2,
+#         Probe.Entries.3=watermazedata$Probe.Entries.3,
+#         Probe.Entries.Ave=watermazedata$Probe.Entries.Ave,
+#         Probe.Percent1=watermazedata$Probe.Percent1,
+#         Probe.Percent2=watermazedata$Probe.Percent2,
+#         Probe.Percent3=watermazedata$Probe.Percent3,
+#         Probe.Percent.Ave=watermazedata$Probe.Percent.Ave,
+#         Probe2.Opposite.Percent=watermazedata$Probe2.Opposite.Percent),
+#   watermazedata$Treatment, describe)
+
+
+# stat.desc()
+# Overall DVs (not broken down by group)
+ stat.desc(cbind(Duration.Cued=watermazedata$Duration.Cued,
+         Duration.Spatial1=watermazedata$Duration.Spatial1,
+         Duration.Spatial2=watermazedata$Duration.Spatial2,
+         Duration.Spatial3=watermazedata$Duration.Spatial3,
+         Duration.Spatial=watermazedata$Duration.Spatial,
+         Distance.Cued=watermazedata$Distance.Cued,
+         Distance.Spatial1=watermazedata$Distance.Spatial1,
+         Distance.Spatial2=watermazedata$Distance.Spatial2,
+         Distance.Spatial3=watermazedata$Distance.Spatial3,
+         Distance.Spatial=watermazedata$Distance.Spatial,
+         Speed=watermazedata$Speed,
+         Probe.Entries.1=watermazedata$Probe.Entries.1,
+         Probe.Entries.2=watermazedata$Probe.Entries.2,
+         Probe.Entries.3=watermazedata$Probe.Entries.3,
+         Probe.Entries.Ave=watermazedata$Probe.Entries.Ave,
+         Probe.Percent1=watermazedata$Probe.Percent1,
+         Probe.Percent2=watermazedata$Probe.Percent2,
+         Probe.Percent3=watermazedata$Probe.Percent3,
+         Probe.Percent.Ave=watermazedata$Probe.Percent.Ave,
+         Probe2.Opposite.Percent=watermazedata$Probe2.Opposite.Percent),
+           basic = FALSE, norm = TRUE)
+# or
+# stat.desc(watermazedata[, c("Duration.Spatial1",
+#                            "Duration.Spatial2",
+#                            "Duration.Spatial3")], basic = FALSE, norm = TRUE); # ETC
+
+# normality of overall variables
+shapiro.test(watermazedata$Duration.Cued)
+shapiro.test(watermazedata$Duration.Spatial1)
+shapiro.test(watermazedata$Duration.Spatial2)
+shapiro.test(watermazedata$Duration.Spatial3)
+shapiro.test(watermazedata$Duration.Spatial)
+shapiro.test(watermazedata$Distance.Cued)
+shapiro.test(watermazedata$Distance.Spatial1)
+shapiro.test(watermazedata$Distance.Spatial2)
+shapiro.test(watermazedata$Distance.Spatial3)
+shapiro.test(watermazedata$Distance.Spatial)
+shapiro.test(watermazedata$Speed)
+shapiro.test(watermazedata$Probe.Entries.1)
+shapiro.test(watermazedata$Probe.Entries.2)
+shapiro.test(watermazedata$Probe.Entries.3)
+shapiro.test(watermazedata$Probe.Entries.Ave)
+shapiro.test(watermazedata$Probe.Percent1)
+shapiro.test(watermazedata$Probe.Percent2)
+shapiro.test(watermazedata$Probe.Percent3)
+shapiro.test(watermazedata$Probe.Percent.Ave)
+shapiro.test(watermazedata$Probe2.Opposite.Percent)
+
+
+# Broken down by group
+# single variables: by(data = dataFrame$Variable, INDICES = dataFrame$grouping DV, FUN = function)
+# by(data = watermazedata$Duration.Spatial, INDICES = watermazedata$Treatment, FUN = stat.desc)
+# or
+# by(watermazedata$Duration.Spatial, watermazedata$Treatment, stat.desc)
+# or
+# by(watermazedata$Duration.Spatial, watermazedata$Treatment, stat.desc, basic = FALSE, norm = TRUE)
+
+
+# multiple variables at once:
+by(cbind(Duration.Cued=watermazedata$Duration.Cued,
+         Duration.Spatial1=watermazedata$Duration.Spatial1,
+         Duration.Spatial2=watermazedata$Duration.Spatial2,
+         Duration.Spatial3=watermazedata$Duration.Spatial3,
+         Duration.Spatial=watermazedata$Duration.Spatial,
+         Distance.Cued=watermazedata$Distance.Cued,
+         Distance.Spatial1=watermazedata$Distance.Spatial1,
+         Distance.Spatial2=watermazedata$Distance.Spatial2,
+         Distance.Spatial3=watermazedata$Distance.Spatial3,
+         Distance.Spatial=watermazedata$Distance.Spatial,
+         Speed=watermazedata$Speed,
+         Probe.Entries.1=watermazedata$Probe.Entries.1,
+         Probe.Entries.2=watermazedata$Probe.Entries.2,
+         Probe.Entries.3=watermazedata$Probe.Entries.3,
+         Probe.Entries.Ave=watermazedata$Probe.Entries.Ave,
+         Probe.Percent1=watermazedata$Probe.Percent1,
+         Probe.Percent2=watermazedata$Probe.Percent2,
+         Probe.Percent3=watermazedata$Probe.Percent3,
+         Probe.Percent.Ave=watermazedata$Probe.Percent.Ave,
+         Probe2.Opposite.Percent=watermazedata$Probe2.Opposite.Percent),
+   watermazedata$Treatment, stat.desc, basic = FALSE, norm = TRUE)
+# or
+# by(watermazedata[, c("Duration.Spatial1",
+#                     "Duration.Spatial1",
+#                     "Duration.Spatial3")],; #ETC
+#   watermazedata$Treatment, stat.desc, basic = FALSE, norm = TRUE)
+
+# normality of variables broken down by group
+by(watermazedata$Duration.Cued, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Duration.Spatial1, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Duration.Spatial2, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Duration.Spatial3, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Duration.Spatial, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Distance.Cued, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Distance.Spatial1, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Distance.Spatial2, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Distance.Spatial3, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Distance.Spatial, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Speed, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe.Entries.1, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe.Entries.2, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe.Entries.3, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe.Entries.Ave, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe.Percent1, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe.Percent2, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe.Percent3, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe.Percent.Ave, watermazedata$Treatment, shapiro.test)
+by(watermazedata$Probe2.Opposite.Percent, watermazedata$Treatment, shapiro.test)
+
+
+# Test for homogeneity of variance among groups using the leveneTest() function from the car package (default uses median)... to use mean instead of median: leveneTest(watermazedata$Duration.Spatial, watermazedata$Treatment, center = mean)
+
+leveneTest(watermazedata$Duration.Cued, watermazedata$Treatment)
+leveneTest(watermazedata$Duration.Spatial1, watermazedata$Treatment)
+leveneTest(watermazedata$Duration.Spatial2, watermazedata$Treatment)
+leveneTest(watermazedata$Duration.Spatial3, watermazedata$Treatment)
+leveneTest(watermazedata$Duration.Spatial, watermazedata$Treatment)
+leveneTest(watermazedata$Distance.Cued, watermazedata$Treatment)
+leveneTest(watermazedata$Distance.Spatial1, watermazedata$Treatment)
+leveneTest(watermazedata$Distance.Spatial2, watermazedata$Treatment)
+leveneTest(watermazedata$Distance.Spatial3, watermazedata$Treatment)
+leveneTest(watermazedata$Distance.Spatial, watermazedata$Treatment)
+leveneTest(watermazedata$Speed, watermazedata$Treatment)
+leveneTest(watermazedata$Probe.Entries.1, watermazedata$Treatment)
+leveneTest(watermazedata$Probe.Entries.2, watermazedata$Treatment)
+leveneTest(watermazedata$Probe.Entries.3, watermazedata$Treatment)
+leveneTest(watermazedata$Probe.Entries.Ave, watermazedata$Treatment)
+leveneTest(watermazedata$Probe.Percent1, watermazedata$Treatment)
+leveneTest(watermazedata$Probe.Percent2, watermazedata$Treatment)
+leveneTest(watermazedata$Probe.Percent3, watermazedata$Treatment)
+leveneTest(watermazedata$Probe.Percent.Ave, watermazedata$Treatment)
+leveneTest(watermazedata$Probe2.Opposite.Percent, watermazedata$Treatment)
+
+# *** IF 1 OF 3 IS SIGNIFICANT [NOT NORMAL], DOES THAT REQUIRE NONPARAMETRIC? ***
+```
+
+Visually check each variable's data for normality averaged across all groups. This info is probably not all that interestng until broken down by group.
+
+```{r}
+# Histograms with overlaid normal curve and Quantile–quantile plots (ADD SCATTERPLOTS)
+
+# Duration
+
+hist.Duration.Cued <- ggplot(watermazedata, aes(Duration.Cued)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Cued Duration", y = "Number")
+hist.Duration.Cued +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Duration.Cued, na.rm = TRUE),
+                    sd = sd(watermazedata$Duration.Cued, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Cued <- qplot(sample = watermazedata$Duration.Cued)
+qqplot.Duration.Cued
+boxplot(watermazedata$Duration.Cued, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial1 <- ggplot(watermazedata, aes(Duration.Spatial1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Duration.Spatial1, na.rm = TRUE),
+                    sd = sd(watermazedata$Duration.Spatial1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial1 <- qplot(sample = watermazedata$Duration.Spatial1)
+qqplot.Duration.Spatial1
+boxplot(watermazedata$Duration.Spatial1, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+hist.Duration.Spatial2 <- ggplot(watermazedata, aes(Duration.Spatial2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Duration.Spatial2, na.rm = TRUE),
+                    sd = sd(watermazedata$Duration.Spatial2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial2 <- qplot(sample = watermazedata$Duration.Spatial2)
+qqplot.Duration.Spatial2
+boxplot(watermazedata$Duration.Spatial2, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial3 <- ggplot(watermazedata, aes(Duration.Spatial3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Duration.Spatial3, na.rm = TRUE),
+                    sd = sd(watermazedata$Duration.Spatial3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial3 <- qplot(sample = watermazedata$Duration.Spatial3)
+qqplot.Duration.Spatial3
+boxplot(watermazedata$Duration.Spatial3, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial <- ggplot(watermazedata, aes(Duration.Spatial)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Duration.Spatial, na.rm = TRUE),
+                    sd = sd(watermazedata$Duration.Spatial, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial <- qplot(sample = watermazedata$Duration.Spatial)
+qqplot.Duration.Spatial
+boxplot(watermazedata$Duration.Spatial, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+# Distance
+
+hist.Distance.Cued <- ggplot(watermazedata, aes(Distance.Cued)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Cued Distance", y = "Number")
+hist.Distance.Cued +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Distance.Cued, na.rm = TRUE),
+                    sd = sd(watermazedata$Distance.Cued, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Cued <- qplot(sample = watermazedata$Distance.Cued)
+qqplot.Distance.Cued
+boxplot(watermazedata$Distance.Cued, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial1 <- ggplot(watermazedata, aes(Distance.Spatial1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Distance.Spatial1, na.rm = TRUE),
+                    sd = sd(watermazedata$Distance.Spatial1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial1 <- qplot(sample = watermazedata$Distance.Spatial1)
+qqplot.Distance.Spatial1
+boxplot(watermazedata$Distance.Spatial1, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial2 <- ggplot(watermazedata, aes(Distance.Spatial2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Distance.Spatial2, na.rm = TRUE),
+                    sd = sd(watermazedata$Distance.Spatial2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial2 <- qplot(sample = watermazedata$Distance.Spatial2)
+qqplot.Distance.Spatial2
+boxplot(watermazedata$Distance.Spatial2, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial3 <- ggplot(watermazedata, aes(Distance.Spatial3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Distance.Spatial3, na.rm = TRUE),
+                    sd = sd(watermazedata$Distance.Spatial3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial3 <- qplot(sample = watermazedata$Distance.Spatial3)
+qqplot.Distance.Spatial3
+boxplot(watermazedata$Distance.Spatial3, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial <- ggplot(watermazedata, aes(Distance.Spatial)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Distance.Spatial, na.rm = TRUE),
+                    sd = sd(watermazedata$Distance.Spatial, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial <- qplot(sample = watermazedata$Distance.Spatial)
+qqplot.Distance.Spatial
+boxplot(watermazedata$Distance.Spatial, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+# Speed
+
+hist.Speed <- ggplot(watermazedata, aes(Speed)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Speed", y = "Number")
+hist.Speed +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Speed, na.rm = TRUE),
+                    sd = sd(watermazedata$Speed, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Speed <- qplot(sample = watermazedata$Speed)
+qqplot.Speed
+boxplot(watermazedata$Speed, main="Boxplots by Group", xlab="Group", ylab="Speed")
+
+# Probe stuff
+
+hist.Probe.Entries.1 <- ggplot(watermazedata, aes(Probe.Entries.1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Entries", y = "Number")
+hist.Probe.Entries.1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe.Entries.1, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe.Entries.1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.1 <- qplot(sample = watermazedata$Probe.Entries.1)
+qqplot.Probe.Entries.1
+boxplot(watermazedata$Probe.Entries.1, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.2 <- ggplot(watermazedata, aes(Probe.Entries.2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe.Entries.2, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe.Entries.2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.2 <- qplot(sample = watermazedata$Probe.Entries.2)
+qqplot.Probe.Entries.2
+boxplot(watermazedata$Probe.Entries.2, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.3 <- ggplot(watermazedata, aes(Probe.Entries.3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe.Entries.3, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe.Entries.3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.3 <- qplot(sample = watermazedata$Probe.Entries.3)
+qqplot.Probe.Entries.3
+boxplot(watermazedata$Probe.Entries.3, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.Ave <- ggplot(watermazedata, aes(Probe.Entries.Ave)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.Ave +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe.Entries.Ave, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe.Entries.Ave, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.Ave <- qplot(sample = watermazedata$Probe.Entries.Ave)
+qqplot.Probe.Entries.Ave
+boxplot(watermazedata$Probe.Entries.Ave, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Percent1 <- ggplot(watermazedata, aes(Probe.Percent1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe.Percent1, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe.Percent1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent1 <- qplot(sample = watermazedata$Probe.Percent1)
+qqplot.Probe.Percent1
+boxplot(watermazedata$Probe.Percent1, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent2 <- ggplot(watermazedata, aes(Probe.Percent2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe.Percent2, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe.Percent2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent2 <- qplot(sample = watermazedata$Probe.Percent2)
+qqplot.Probe.Percent2
+boxplot(watermazedata$Probe.Percent2, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent3 <- ggplot(watermazedata, aes(Probe.Percent3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe.Percent3, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe.Percent3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent3 <- qplot(sample = watermazedata$Probe.Percent3)
+qqplot.Probe.Percent3
+boxplot(watermazedata$Probe.Percent3, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent.Ave <- ggplot(watermazedata, aes(Probe.Percent.Ave)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent.Ave +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe.Percent.Ave, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe.Percent.Ave, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent.Ave <- qplot(sample = watermazedata$Probe.Percent.Ave)
+qqplot.Probe.Percent.Ave
+boxplot(watermazedata$Probe.Percent.Ave, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe2.Opposite.Percent <- ggplot(watermazedata, aes(Probe2.Opposite.Percent)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe2.Opposite.Percent +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(watermazedata$Probe2.Opposite.Percent, na.rm = TRUE),
+                    sd = sd(watermazedata$Probe2.Opposite.Percent, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe2.Opposite.Percent <- qplot(sample = watermazedata$Probe2.Opposite.Percent)
+qqplot.Probe2.Opposite.Percent
+boxplot(watermazedata$Probe2.Opposite.Percent, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+```
+
+Now, visually check each variable data for normality broken down by group - histograms and QQ plots and box plots for each Treatment group.
+
+```{r}
+# Broken down by group (use the "subset" dataframes that were derived earlier)
+
+# Ac
+# Duration
+
+hist.Duration.Cued <- ggplot(Ac_watermazedata, aes(Duration.Cued)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Cued Duration", y = "Number")
+hist.Duration.Cued +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Duration.Cued, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Duration.Cued, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Cued <- qplot(sample = Ac_watermazedata$Duration.Cued)
+qqplot.Duration.Cued
+boxplot(Ac_watermazedata$Duration.Cued, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial1 <- ggplot(Ac_watermazedata, aes(Duration.Spatial1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Duration.Spatial1, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Duration.Spatial1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial1 <- qplot(sample = Ac_watermazedata$Duration.Spatial1)
+qqplot.Duration.Spatial1
+boxplot(Ac_watermazedata$Duration.Spatial1, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+hist.Duration.Spatial2 <- ggplot(Ac_watermazedata, aes(Duration.Spatial2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Duration.Spatial2, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Duration.Spatial2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial2 <- qplot(sample = Ac_watermazedata$Duration.Spatial2)
+qqplot.Duration.Spatial2
+boxplot(Ac_watermazedata$Duration.Spatial2, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial3 <- ggplot(Ac_watermazedata, aes(Duration.Spatial3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Duration.Spatial3, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Duration.Spatial3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial3 <- qplot(sample = Ac_watermazedata$Duration.Spatial3)
+qqplot.Duration.Spatial3
+boxplot(Ac_watermazedata$Duration.Spatial3, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial <- ggplot(Ac_watermazedata, aes(Duration.Spatial)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Duration.Spatial, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Duration.Spatial, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial <- qplot(sample = Ac_watermazedata$Duration.Spatial)
+qqplot.Duration.Spatial
+boxplot(Ac_watermazedata$Duration.Spatial, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+# Distance
+
+hist.Distance.Cued <- ggplot(Ac_watermazedata, aes(Distance.Cued)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Cued Distance", y = "Number")
+hist.Distance.Cued +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Distance.Cued, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Distance.Cued, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Cued <- qplot(sample = Ac_watermazedata$Distance.Cued)
+qqplot.Distance.Cued
+boxplot(Ac_watermazedata$Distance.Cued, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial1 <- ggplot(Ac_watermazedata, aes(Distance.Spatial1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Distance.Spatial1, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Distance.Spatial1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial1 <- qplot(sample = Ac_watermazedata$Distance.Spatial1)
+qqplot.Distance.Spatial1
+boxplot(Ac_watermazedata$Distance.Spatial1, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial2 <- ggplot(Ac_watermazedata, aes(Distance.Spatial2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Distance.Spatial2, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Distance.Spatial2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial2 <- qplot(sample = Ac_watermazedata$Distance.Spatial2)
+qqplot.Distance.Spatial2
+boxplot(Ac_watermazedata$Distance.Spatial2, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial3 <- ggplot(Ac_watermazedata, aes(Distance.Spatial3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Distance.Spatial3, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Distance.Spatial3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial3 <- qplot(sample = Ac_watermazedata$Distance.Spatial3)
+qqplot.Distance.Spatial3
+boxplot(Ac_watermazedata$Distance.Spatial3, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial <- ggplot(Ac_watermazedata, aes(Distance.Spatial)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Distance.Spatial, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Distance.Spatial, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial <- qplot(sample = Ac_watermazedata$Distance.Spatial)
+qqplot.Distance.Spatial
+boxplot(Ac_watermazedata$Distance.Spatial, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+# Speed
+
+hist.Speed <- ggplot(Ac_watermazedata, aes(Speed)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Speed", y = "Number")
+hist.Speed +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Speed, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Speed, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Speed <- qplot(sample = Ac_watermazedata$Speed)
+qqplot.Speed
+boxplot(Ac_watermazedata$Speed, main="Boxplots by Group", xlab="Group", ylab="Speed")
+
+# Probe stuff
+
+hist.Probe.Entries.1 <- ggplot(Ac_watermazedata, aes(Probe.Entries.1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Entries", y = "Number")
+hist.Probe.Entries.1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe.Entries.1, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe.Entries.1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.1 <- qplot(sample = Ac_watermazedata$Probe.Entries.1)
+qqplot.Probe.Entries.1
+boxplot(Ac_watermazedata$Probe.Entries.1, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.2 <- ggplot(Ac_watermazedata, aes(Probe.Entries.2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe.Entries.2, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe.Entries.2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.2 <- qplot(sample = Ac_watermazedata$Probe.Entries.2)
+qqplot.Probe.Entries.2
+boxplot(Ac_watermazedata$Probe.Entries.2, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.3 <- ggplot(Ac_watermazedata, aes(Probe.Entries.3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe.Entries.3, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe.Entries.3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.3 <- qplot(sample = Ac_watermazedata$Probe.Entries.3)
+qqplot.Probe.Entries.3
+boxplot(Ac_watermazedata$Probe.Entries.3, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.Ave <- ggplot(Ac_watermazedata, aes(Probe.Entries.Ave)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.Ave +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe.Entries.Ave, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe.Entries.Ave, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.Ave <- qplot(sample = Ac_watermazedata$Probe.Entries.Ave)
+qqplot.Probe.Entries.Ave
+boxplot(Ac_watermazedata$Probe.Entries.Ave, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Percent1 <- ggplot(Ac_watermazedata, aes(Probe.Percent1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe.Percent1, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe.Percent1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent1 <- qplot(sample = Ac_watermazedata$Probe.Percent1)
+qqplot.Probe.Percent1
+boxplot(Ac_watermazedata$Probe.Percent1, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent2 <- ggplot(Ac_watermazedata, aes(Probe.Percent2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe.Percent2, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe.Percent2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent2 <- qplot(sample = Ac_watermazedata$Probe.Percent2)
+qqplot.Probe.Percent2
+boxplot(Ac_watermazedata$Probe.Percent2, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent3 <- ggplot(Ac_watermazedata, aes(Probe.Percent3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe.Percent3, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe.Percent3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent3 <- qplot(sample = Ac_watermazedata$Probe.Percent3)
+qqplot.Probe.Percent3
+boxplot(Ac_watermazedata$Probe.Percent3, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent.Ave <- ggplot(Ac_watermazedata, aes(Probe.Percent.Ave)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent.Ave +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe.Percent.Ave, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe.Percent.Ave, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent.Ave <- qplot(sample = Ac_watermazedata$Probe.Percent.Ave)
+qqplot.Probe.Percent.Ave
+boxplot(Ac_watermazedata$Probe.Percent.Ave, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe2.Opposite.Percent <- ggplot(Ac_watermazedata, aes(Probe2.Opposite.Percent)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe2.Opposite.Percent +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Ac_watermazedata$Probe2.Opposite.Percent, na.rm = TRUE),
+                    sd = sd(Ac_watermazedata$Probe2.Opposite.Percent, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe2.Opposite.Percent <- qplot(sample = Ac_watermazedata$Probe2.Opposite.Percent)
+qqplot.Probe2.Opposite.Percent
+boxplot(Ac_watermazedata$Probe2.Opposite.Percent, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+# Fx
+# Duration
+
+hist.Duration.Cued <- ggplot(Fx_watermazedata, aes(Duration.Cued)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Cued Duration", y = "Number")
+hist.Duration.Cued +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Duration.Cued, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Duration.Cued, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Cued <- qplot(sample = Fx_watermazedata$Duration.Cued)
+qqplot.Duration.Cued
+boxplot(Fx_watermazedata$Duration.Cued, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial1 <- ggplot(Fx_watermazedata, aes(Duration.Spatial1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Duration.Spatial1, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Duration.Spatial1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial1 <- qplot(sample = Fx_watermazedata$Duration.Spatial1)
+qqplot.Duration.Spatial1
+boxplot(Fx_watermazedata$Duration.Spatial1, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+hist.Duration.Spatial2 <- ggplot(Fx_watermazedata, aes(Duration.Spatial2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Duration.Spatial2, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Duration.Spatial2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial2 <- qplot(sample = Fx_watermazedata$Duration.Spatial2)
+qqplot.Duration.Spatial2
+boxplot(Fx_watermazedata$Duration.Spatial2, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial3 <- ggplot(Fx_watermazedata, aes(Duration.Spatial3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Duration.Spatial3, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Duration.Spatial3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial3 <- qplot(sample = Fx_watermazedata$Duration.Spatial3)
+qqplot.Duration.Spatial3
+boxplot(Fx_watermazedata$Duration.Spatial3, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial <- ggplot(Fx_watermazedata, aes(Duration.Spatial)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Duration.Spatial, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Duration.Spatial, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial <- qplot(sample = Fx_watermazedata$Duration.Spatial)
+qqplot.Duration.Spatial
+boxplot(Fx_watermazedata$Duration.Spatial, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+# Distance
+
+hist.Distance.Cued <- ggplot(Fx_watermazedata, aes(Distance.Cued)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Cued Distance", y = "Number")
+hist.Distance.Cued +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Distance.Cued, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Distance.Cued, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Cued <- qplot(sample = Fx_watermazedata$Distance.Cued)
+qqplot.Distance.Cued
+boxplot(Fx_watermazedata$Distance.Cued, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial1 <- ggplot(Fx_watermazedata, aes(Distance.Spatial1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Distance.Spatial1, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Distance.Spatial1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial1 <- qplot(sample = Fx_watermazedata$Distance.Spatial1)
+qqplot.Distance.Spatial1
+boxplot(Fx_watermazedata$Distance.Spatial1, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial2 <- ggplot(Fx_watermazedata, aes(Distance.Spatial2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Distance.Spatial2, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Distance.Spatial2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial2 <- qplot(sample = Fx_watermazedata$Distance.Spatial2)
+qqplot.Distance.Spatial2
+boxplot(Fx_watermazedata$Distance.Spatial2, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial3 <- ggplot(Fx_watermazedata, aes(Distance.Spatial3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Distance.Spatial3, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Distance.Spatial3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial3 <- qplot(sample = Fx_watermazedata$Distance.Spatial3)
+qqplot.Distance.Spatial3
+boxplot(Fx_watermazedata$Distance.Spatial3, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial <- ggplot(Fx_watermazedata, aes(Distance.Spatial)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Distance.Spatial, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Distance.Spatial, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial <- qplot(sample = Fx_watermazedata$Distance.Spatial)
+qqplot.Distance.Spatial
+boxplot(Fx_watermazedata$Distance.Spatial, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+# Speed
+
+hist.Speed <- ggplot(Fx_watermazedata, aes(Speed)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Speed", y = "Number")
+hist.Speed +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Speed, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Speed, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Speed <- qplot(sample = Fx_watermazedata$Speed)
+qqplot.Speed
+boxplot(Fx_watermazedata$Speed, main="Boxplots by Group", xlab="Group", ylab="Speed")
+
+# Probe stuff
+
+hist.Probe.Entries.1 <- ggplot(Fx_watermazedata, aes(Probe.Entries.1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Entries", y = "Number")
+hist.Probe.Entries.1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe.Entries.1, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe.Entries.1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.1 <- qplot(sample = Fx_watermazedata$Probe.Entries.1)
+qqplot.Probe.Entries.1
+boxplot(Fx_watermazedata$Probe.Entries.1, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.2 <- ggplot(Fx_watermazedata, aes(Probe.Entries.2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe.Entries.2, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe.Entries.2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.2 <- qplot(sample = Fx_watermazedata$Probe.Entries.2)
+qqplot.Probe.Entries.2
+boxplot(Fx_watermazedata$Probe.Entries.2, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.3 <- ggplot(Fx_watermazedata, aes(Probe.Entries.3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe.Entries.3, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe.Entries.3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.3 <- qplot(sample = Fx_watermazedata$Probe.Entries.3)
+qqplot.Probe.Entries.3
+boxplot(Fx_watermazedata$Probe.Entries.3, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.Ave <- ggplot(Fx_watermazedata, aes(Probe.Entries.Ave)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.Ave +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe.Entries.Ave, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe.Entries.Ave, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.Ave <- qplot(sample = Fx_watermazedata$Probe.Entries.Ave)
+qqplot.Probe.Entries.Ave
+boxplot(Fx_watermazedata$Probe.Entries.Ave, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Percent1 <- ggplot(Fx_watermazedata, aes(Probe.Percent1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe.Percent1, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe.Percent1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent1 <- qplot(sample = Fx_watermazedata$Probe.Percent1)
+qqplot.Probe.Percent1
+boxplot(Fx_watermazedata$Probe.Percent1, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent2 <- ggplot(Fx_watermazedata, aes(Probe.Percent2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe.Percent2, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe.Percent2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent2 <- qplot(sample = Fx_watermazedata$Probe.Percent2)
+qqplot.Probe.Percent2
+boxplot(Fx_watermazedata$Probe.Percent2, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent3 <- ggplot(Fx_watermazedata, aes(Probe.Percent3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe.Percent3, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe.Percent3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent3 <- qplot(sample = Fx_watermazedata$Probe.Percent3)
+qqplot.Probe.Percent3
+boxplot(Fx_watermazedata$Probe.Percent3, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent.Ave <- ggplot(Fx_watermazedata, aes(Probe.Percent.Ave)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent.Ave +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe.Percent.Ave, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe.Percent.Ave, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent.Ave <- qplot(sample = Fx_watermazedata$Probe.Percent.Ave)
+qqplot.Probe.Percent.Ave
+boxplot(Fx_watermazedata$Probe.Percent.Ave, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe2.Opposite.Percent <- ggplot(Fx_watermazedata, aes(Probe2.Opposite.Percent)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe2.Opposite.Percent +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Fx_watermazedata$Probe2.Opposite.Percent, na.rm = TRUE),
+                    sd = sd(Fx_watermazedata$Probe2.Opposite.Percent, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe2.Opposite.Percent <- qplot(sample = Fx_watermazedata$Probe2.Opposite.Percent)
+qqplot.Probe2.Opposite.Percent
+boxplot(Fx_watermazedata$Probe2.Opposite.Percent, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+
+# Sh
+# Duration
+
+hist.Duration.Cued <- ggplot(Sh_watermazedata, aes(Duration.Cued)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Cued Duration", y = "Number")
+hist.Duration.Cued +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Duration.Cued, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Duration.Cued, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Cued <- qplot(sample = Sh_watermazedata$Duration.Cued)
+qqplot.Duration.Cued
+boxplot(Sh_watermazedata$Duration.Cued, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial1 <- ggplot(Sh_watermazedata, aes(Duration.Spatial1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Duration.Spatial1, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Duration.Spatial1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial1 <- qplot(sample = Sh_watermazedata$Duration.Spatial1)
+qqplot.Duration.Spatial1
+boxplot(Sh_watermazedata$Duration.Spatial1, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+hist.Duration.Spatial2 <- ggplot(Sh_watermazedata, aes(Duration.Spatial2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Duration.Spatial2, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Duration.Spatial2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial2 <- qplot(sample = Sh_watermazedata$Duration.Spatial2)
+qqplot.Duration.Spatial2
+boxplot(Sh_watermazedata$Duration.Spatial2, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial3 <- ggplot(Sh_watermazedata, aes(Duration.Spatial3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Duration.Spatial3, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Duration.Spatial3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial3 <- qplot(sample = Sh_watermazedata$Duration.Spatial3)
+qqplot.Duration.Spatial3
+boxplot(Sh_watermazedata$Duration.Spatial3, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+hist.Duration.Spatial <- ggplot(Sh_watermazedata, aes(Duration.Spatial)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Duration", y = "Number")
+hist.Duration.Spatial +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Duration.Spatial, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Duration.Spatial, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Duration.Spatial <- qplot(sample = Sh_watermazedata$Duration.Spatial)
+qqplot.Duration.Spatial
+boxplot(Sh_watermazedata$Duration.Spatial, main="Boxplots by Group", xlab="Group", ylab="Duration")
+
+
+# Distance
+
+hist.Distance.Cued <- ggplot(Sh_watermazedata, aes(Distance.Cued)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Cued Distance", y = "Number")
+hist.Distance.Cued +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Distance.Cued, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Distance.Cued, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Cued <- qplot(sample = Sh_watermazedata$Distance.Cued)
+qqplot.Distance.Cued
+boxplot(Sh_watermazedata$Distance.Cued, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial1 <- ggplot(Sh_watermazedata, aes(Distance.Spatial1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Distance.Spatial1, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Distance.Spatial1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial1 <- qplot(sample = Sh_watermazedata$Distance.Spatial1)
+qqplot.Distance.Spatial1
+boxplot(Sh_watermazedata$Distance.Spatial1, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial2 <- ggplot(Sh_watermazedata, aes(Distance.Spatial2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Distance.Spatial2, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Distance.Spatial2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial2 <- qplot(sample = Sh_watermazedata$Distance.Spatial2)
+qqplot.Distance.Spatial2
+boxplot(Sh_watermazedata$Distance.Spatial2, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial3 <- ggplot(Sh_watermazedata, aes(Distance.Spatial3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Distance.Spatial3, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Distance.Spatial3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial3 <- qplot(sample = Sh_watermazedata$Distance.Spatial3)
+qqplot.Distance.Spatial3
+boxplot(Sh_watermazedata$Distance.Spatial3, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+hist.Distance.Spatial <- ggplot(Sh_watermazedata, aes(Distance.Spatial)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Spatial Distance", y = "Number")
+hist.Distance.Spatial +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Distance.Spatial, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Distance.Spatial, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Distance.Spatial <- qplot(sample = Sh_watermazedata$Distance.Spatial)
+qqplot.Distance.Spatial
+boxplot(Sh_watermazedata$Distance.Spatial, main="Boxplots by Group", xlab="Group", ylab="Distance")
+
+
+# Speed
+
+hist.Speed <- ggplot(Sh_watermazedata, aes(Speed)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Speed", y = "Number")
+hist.Speed +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Speed, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Speed, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Speed <- qplot(sample = Sh_watermazedata$Speed)
+qqplot.Speed
+boxplot(Sh_watermazedata$Speed, main="Boxplots by Group", xlab="Group", ylab="Speed")
+
+# Probe stuff
+
+hist.Probe.Entries.1 <- ggplot(Sh_watermazedata, aes(Probe.Entries.1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Average Entries", y = "Number")
+hist.Probe.Entries.1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe.Entries.1, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe.Entries.1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.1 <- qplot(sample = Sh_watermazedata$Probe.Entries.1)
+qqplot.Probe.Entries.1
+boxplot(Sh_watermazedata$Probe.Entries.1, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.2 <- ggplot(Sh_watermazedata, aes(Probe.Entries.2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe.Entries.2, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe.Entries.2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.2 <- qplot(sample = Sh_watermazedata$Probe.Entries.2)
+qqplot.Probe.Entries.2
+boxplot(Sh_watermazedata$Probe.Entries.2, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.3 <- ggplot(Sh_watermazedata, aes(Probe.Entries.3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe.Entries.3, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe.Entries.3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.3 <- qplot(sample = Sh_watermazedata$Probe.Entries.3)
+qqplot.Probe.Entries.3
+boxplot(Sh_watermazedata$Probe.Entries.3, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Entries.Ave <- ggplot(Sh_watermazedata, aes(Probe.Entries.Ave)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Entries", y = "Number")
+hist.Probe.Entries.Ave +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe.Entries.Ave, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe.Entries.Ave, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Entries.Ave <- qplot(sample = Sh_watermazedata$Probe.Entries.Ave)
+qqplot.Probe.Entries.Ave
+boxplot(Sh_watermazedata$Probe.Entries.Ave, main="Boxplots by Group", xlab="Group", ylab="Entries")
+
+
+hist.Probe.Percent1 <- ggplot(Sh_watermazedata, aes(Probe.Percent1)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent1 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe.Percent1, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe.Percent1, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent1 <- qplot(sample = Sh_watermazedata$Probe.Percent1)
+qqplot.Probe.Percent1
+boxplot(Sh_watermazedata$Probe.Percent1, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent2 <- ggplot(Sh_watermazedata, aes(Probe.Percent2)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent2 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe.Percent2, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe.Percent2, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent2 <- qplot(sample = Sh_watermazedata$Probe.Percent2)
+qqplot.Probe.Percent2
+boxplot(Sh_watermazedata$Probe.Percent2, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent3 <- ggplot(Sh_watermazedata, aes(Probe.Percent3)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent3 +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe.Percent3, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe.Percent3, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent3 <- qplot(sample = Sh_watermazedata$Probe.Percent3)
+qqplot.Probe.Percent3
+boxplot(Sh_watermazedata$Probe.Percent3, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe.Percent.Ave <- ggplot(Sh_watermazedata, aes(Probe.Percent.Ave)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe.Percent.Ave +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe.Percent.Ave, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe.Percent.Ave, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe.Percent.Ave <- qplot(sample = Sh_watermazedata$Probe.Percent.Ave)
+qqplot.Probe.Percent.Ave
+boxplot(Sh_watermazedata$Probe.Percent.Ave, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+
+hist.Probe2.Opposite.Percent <- ggplot(Sh_watermazedata, aes(Probe2.Opposite.Percent)) + 
+  geom_histogram(aes(y = ..density..), colour = "black", fill = "white") +
+  labs(x = "Percent", y = "Number")
+hist.Probe2.Opposite.Percent +
+  stat_function(fun = dnorm, args = list
+                  (mean = mean(Sh_watermazedata$Probe2.Opposite.Percent, na.rm = TRUE),
+                    sd = sd(Sh_watermazedata$Probe2.Opposite.Percent, na.rm = TRUE)),
+                  colour = "black", size = 1)
+qqplot.Probe2.Opposite.Percent <- qplot(sample = Sh_watermazedata$Probe2.Opposite.Percent)
+qqplot.Probe2.Opposite.Percent
+boxplot(Sh_watermazedata$Probe2.Opposite.Percent, main="Boxplots by Group", xlab="Group", ylab="Percent")
+
+```
+
+Meeting assumptions of normality / homogeneity of variance can be tough w/ large data sets because small variations can be "significant" (you can also test homogeneity of variance w/ "variance ratio" or Hartley's Fmax). Either way, if data are not normally distributed and of equal variances, parametric tests are not valid. To correct "problems" with the data:
+
+Outliers
+ - remove the case / subject (especially if it was somehow "different")
+ - "bring the case it into the fold" using the mean + 2 or 3 SDs - Change the score to be the mean + 2 or 3 SDs
+ - "bring the case into the fold" using the next highest score plus one method - Change the score to be one unit above the next highest score in the data set
+
+For non-normally-distributed data:
+ - Can also use "trimmed means" (removing a specific % of cases have been removed from each end)
+ - Can also use "M-estimator" which empirically derives the proper % to trim
+ - Can also use bootstrapping to estimate "true" mean / variance
+ - Transform the data: log, square root, or reciprocal transformations can correct for positive skew and/or unequal variance. If data are negatively skewed, you need derive a reciprocal score (reverse the scores by subtracting each score from the highest score obtained)
+  -- Make new transformed DVs using newVariable <- function(oldVariable)
+    --- Square root: watermazedata$Duration.Spatial.Sqrt <- sqrt(watermazedata$Duration.Spatial)
+    --- Absolute value: watermazedata$Duration.Spatial.Abs <- abs(watermazedata$Duration.Spatial.Diff)
+    --- Log (natural): watermazedata$Duration.Spatial.Log <- log(watermazedata$Duration.Spatial +1)
+            +1 needed to avoid trying to calculate log of 0
+    --- Log (base 10): watermazedata$Duration.Spatial.Log10 <- log10(watermazedata$Duration.Spatial)
+            +1 needed for base 10???
+    --- Reciprocal: watermazedata$Duration.Spatial.Reciprocal <- 1/(watermazedata$Duration.Spatial +1)
+            +1 needed to avoid trying to divide by zero
+            

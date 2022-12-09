@@ -1,0 +1,13 @@
+{
+    "path": "~/Desktop/Work/Projects/Nelson_Radiation/data_clean",
+    "sortOrder": [
+        {
+            "ascending": false,
+            "columnIndex": 4
+        },
+        {
+            "ascending": true,
+            "columnIndex": 2
+        }
+    ]
+}
